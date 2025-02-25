@@ -105,7 +105,7 @@ public class GatewayDeviceApp
 	 * Stops the application.
 	 * 
 	 * @param code The exit code to pass to {@link System.exit()}
-	 */
+	 **/
 	public void stopApp(int code)
 	{
 		_Logger.info("Stopping GDA...");
