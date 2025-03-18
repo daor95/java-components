@@ -22,13 +22,15 @@ public class SystemPerformanceData extends BaseIotData implements Serializable
 	
 	
 	// private var's
-	
+	private float cpuUtil  =ConfigConst.DEFAULT_VAL;
+	private float diskUtil =ConfigConst.DEFAULT_VAL;
+	private float memUtil  =ConfigConst.DEFAULT_VAL;
     
 	// constructors
 	
-	public SystemPerformanceData()
-	{
+	public SystemPerformanceData() {
 		super();
+		super.setName(ConfigConst.SYS_PERF_DATA);
 	}
 	
 	
@@ -36,30 +38,30 @@ public class SystemPerformanceData extends BaseIotData implements Serializable
 	
 	public float getCpuUtilization()
 	{
-		return 0.0f;
+		return this.cpuUtil;
 	}
 	
 	public float getDiskUtilization()
 	{
-		return 0.0f;
+		return this.diskUtil;
 	}
 	
 	public float getMemoryUtilization()
 	{
-		return 0.0f;
+		return this.memUtil;
 	}
 	
-	public void setCpuUtilization(float val)
-	{
-	}
+	public void setCpuUtilization(float val) {
+		super.updateTimeStamp();
+		this.cpuUtil = val; }
 	
-	public void setDiskUtilization(float val)
-	{
-	}
+	public void setDiskUtilization(float val) {
+		super.updateTimeStamp();
+		this.diskUtil = val; }
 	
-	public void setMemoryUtilization(float val)
-	{
-	}
+	public void setMemoryUtilization(float val) {
+		super.updateTimeStamp();
+		this.memUtil = val; }
 	
 	/**
 	 * Returns a string representation of this instance. This will invoke the base class
@@ -87,6 +89,12 @@ public class SystemPerformanceData extends BaseIotData implements Serializable
 	 */
 	protected void handleUpdateData(BaseIotData data)
 	{
+		if (data instanceof SystemPerformanceData) {
+			SystemPerformanceData spd = (SystemPerformanceData) data;
+			this.setCpuUtilization(spd.getCpuUtilization());
+			this.setDiskUtilization(spd.getDiskUtilization());
+			this.setMemoryUtilization(spd.getMemoryUtilization());
+		}
 	}
 	
 }
