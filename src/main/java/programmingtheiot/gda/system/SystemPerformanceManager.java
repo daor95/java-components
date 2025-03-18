@@ -63,9 +63,7 @@ public class SystemPerformanceManager
 		this.sysCpuUtilTask = new SystemCpuUtilTask();
 		this.sysMemUtilTask = new SystemMemUtilTask();
 
-		this.taskRunner = () -> {
-			this.handleTelemetry();
-		};
+		this.taskRunner = this::handleTelemetry;
 
 		this.locationID = ConfigUtil.getInstance().getProperty(
 						ConfigConst.GATEWAY_DEVICE, ConfigConst.LOCATION_ID_PROP, ConfigConst.NOT_SET);

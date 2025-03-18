@@ -98,7 +98,8 @@ public class DeviceDataManager implements IDataMessageListener
 		boolean enablePersistenceClient)
 	{
 		super();
-		
+
+		initManager();
 		initConnections();
 	}
 	
@@ -175,16 +176,18 @@ public class DeviceDataManager implements IDataMessageListener
 	}
 	
 	public void setActuatorDataListener(String name, IActuatorDataListener listener)
-	{
+	{ if (listener != null) {
+
+		this.dataMsgListener = listener;
+
+	}
 	}
 
 	public void startManager()
 	{
 		_Logger.info("Starting DeviceDataManager...");
 		if (this.sysPerfMgr != null) {
-			_Logger.fine("Starting DeviceDataManager...");
 			this.sysPerfMgr.startManager();
-			_Logger.fine("DeviceDataManager Started.");
 		}
 	}
 
@@ -192,9 +195,7 @@ public class DeviceDataManager implements IDataMessageListener
 	{
 		_Logger.info("Stopping DeviceDataManager...");
 		if (this.sysPerfMgr != null) {
-			_Logger.fine("Stopping DeviceDataManager...");
 			this.sysPerfMgr.stopManager();
-			_Logger.fine("DeviceDataManager Stopped.");
 		}
 	}
 
