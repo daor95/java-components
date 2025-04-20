@@ -213,6 +213,14 @@ public class DeviceDataManager implements IDataMessageListener
 				throw new RuntimeException("Failed to connect MQTT client to broker.");
 				// TODO: take appropriate action
 			}
+
+			if (this.enableCoapServer && this.coapServer != null) {
+				if (this.coapServer.startServer()) {
+					_Logger.info("CoAP server started.");
+				} else {
+					_Logger.severe("Failed to start CoAP server. Check log file for details.");
+				}
+			}
 		}
 
 		if (this.sysPerfMgr != null) {
@@ -250,6 +258,14 @@ public class DeviceDataManager implements IDataMessageListener
 				// TODO: take appropriate action
 			}
 		}
+
+		if (this.enableCoapServer && this.coapServer != null) {
+			if (this.coapServer.stopServer()) {
+				_Logger.info("CoAP server stopped.");
+			} else {
+				_Logger.severe("Failed to stop CoAP server. Check log file for details.");
+			}
+		}
 	}
 
 	
@@ -285,7 +301,8 @@ public class DeviceDataManager implements IDataMessageListener
 		}
 
 		if (this.enableCoapServer) {
-			// TODO: implement this in Lab Module 8
+			this.coapServer = new CoapServerGateway(this);
+			_Logger.info("CoAP server enabled");
 		}
 
 		if (this.enableCloudClient) {
@@ -295,11 +312,25 @@ public class DeviceDataManager implements IDataMessageListener
 		if (this.enablePersistenceClient) {
 			// TODO: implement this as an optional exercise in Lab Module 5
 		}
+
+
+		if (this.enableCoapServer) {
+			this.coapServer = new CoapServerGateway(this);
+		}
 	}
 
 	private void handleIncomingDataAnalysis(ResourceNameEnum resourceName, ActuatorData data) {
 
 		_Logger.fine("handleIncomingDataAnalysis for ActuatorData called");
+		_Logger.info("Analyzing incoming actuator data: " + data.getName());
+
+		if (data.isResponseFlagEnabled()) {
+			// TODO: implement this
+		} else {
+			if (this.actuatorDataListener != null) {
+				this.actuatorDataListener.onActuatorDataUpdate(data);
+			}
+		}
 
 	}
 
@@ -311,10 +342,10 @@ public class DeviceDataManager implements IDataMessageListener
 	}
 
 
-	private void handleUpstreamTransmission(ResourceNameEnum resourceName, String jsonData, int qos) {
+	private boolean handleUpstreamTransmission(ResourceNameEnum resourceName, String jsonData, int qos) {
 
 		_Logger.info("handleUpstreamTransmission called");
-
+		return true;
 	}
 
 	
