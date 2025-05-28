@@ -105,6 +105,16 @@ public class CoapClientToServerConnectorTest
 		assertTrue(this.coapClient.sendDiscoveryRequest(DEFAULT_TIMEOUT));
 	}
 
+
+	@Test
+	public void testGetEachResource() {
+		for (ResourceNameEnum resource : ResourceNameEnum.values()) {
+			boolean success = this.coapClient.sendGetRequest(resource, null, USE_DEFAULT_RESOURCES, DEFAULT_TIMEOUT);
+			assertTrue("GET request failed for " + resource.getResourceName(), success);
+			_Logger.info("GET request for " + resource.getResourceName() + " was " + (success ? "successful" : "unsuccessful"));
+		}
+	}
+
 	@Test
 	public void testSystemPerformancePutMessage()
 	{

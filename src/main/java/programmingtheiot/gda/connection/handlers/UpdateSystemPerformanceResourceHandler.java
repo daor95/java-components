@@ -60,20 +60,26 @@ public class UpdateSystemPerformanceResourceHandler extends CoapResource
 	
 	
 	// public methods
-	
+
 	@Override
-	public void handleDELETE(CoapExchange context)
-	{
+	public void handleDELETE(CoapExchange context) {
+		_Logger.info("Handling DELETE request: " + context.getRequestText());
+		context.accept();
+		context.respond(ResponseCode.DELETED, "Delete request accepted and processed.");
 	}
-	
+
 	@Override
-	public void handleGET(CoapExchange context)
-	{
+	public void handleGET(CoapExchange context) {
+		_Logger.info("Handling GET request: " + context.getRequestText());
+		context.accept();
+		context.respond(ResponseCode.CHANGED, "GET request accepted and processed.");
 	}
-	
+
 	@Override
-	public void handlePOST(CoapExchange context)
-	{
+	public void handlePOST(CoapExchange context) {
+		_Logger.info("Handling POST request: " + context.getRequestText());
+		context.accept();
+		context.respond(ResponseCode.CHANGED, "POST request accepted and processed.");
 	}
 
 	@Override

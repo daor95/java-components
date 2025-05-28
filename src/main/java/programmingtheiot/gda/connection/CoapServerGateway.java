@@ -31,8 +31,8 @@ import programmingtheiot.common.ResourceNameEnum;
 import programmingtheiot.gda.connection.handlers.GenericCoapResourceHandler;
 
  //import programmingtheiot.gda.connection.handlers.GetActuatorCommandResourceHandler;
- //import programmingtheiot.gda.connection.handlers.UpdateSystemPerformanceResourceHandler;
- //import programmingtheiot.gda.connection.handlers.UpdateTelemetryResourceHandler;
+ import programmingtheiot.gda.connection.handlers.UpdateSystemPerformanceResourceHandler;
+ import programmingtheiot.gda.connection.handlers.UpdateTelemetryResourceHandler;
 /**
  * Shell representation of class for student implementation.
  * 
