@@ -142,9 +142,35 @@ public class CoapClientConnector implements IRequestResponseClient
 		return false;
 	}
 
+	/*
 	@Override
 	public boolean sendPutRequest(ResourceNameEnum resource, String name, boolean enableCON, String payload, int timeout)
 	{
+		return false;
+	}
+	*/
+
+	@Override
+	public boolean sendPutRequest(ResourceNameEnum resource, String name, boolean enableCON, String payload, int timeout)
+	{
+		try {
+			String uri = "coap://localhost:5683/" + resource.getResourceName();
+			if (name != null && !name.isEmpty()) {
+				uri += "?" + name;
+			}
+			CoapClient client = new CoapClient(uri);
+			client.setTimeout(timeout * 1000L); // timeout in ms
+
+			CoapResponse response = client.put(payload, MediaTypeRegistry.APPLICATION_JSON);
+			if (response != null && response.isSuccess()) {
+				_Logger.info("PUT response for " + uri + ": " + response.getResponseText());
+				return true;
+			} else {
+				_Logger.warning("PUT failed or no response for: " + uri);
+			}
+		} catch (Exception e) {
+			_Logger.log(Level.SEVERE, "PUT request failed", e);
+		}
 		return false;
 	}
 

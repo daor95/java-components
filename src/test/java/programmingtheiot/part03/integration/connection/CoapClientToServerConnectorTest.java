@@ -135,8 +135,10 @@ public class CoapClientToServerConnectorTest
 
 		String jsonData = DataUtil.getInstance().systemPerformanceDataToJson(spData);
 
-		this.coapClient.sendPutRequest(
+		boolean result = this.coapClient.sendPutRequest(
 				ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, null, USE_DEFAULT_RESOURCES, jsonData, DEFAULT_TIMEOUT);
+		_Logger.info("PUT request result: " + result);
+		assertTrue("PUT request failed", result);
 	}
 	
 }
