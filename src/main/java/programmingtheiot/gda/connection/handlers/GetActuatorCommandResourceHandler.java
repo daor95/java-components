@@ -82,12 +82,7 @@ public class GetActuatorCommandResourceHandler extends CoapResource
 	}
 
 
-	
-	@Override
-	public void handleDELETE(CoapExchange context)
-	{
-	}
-	
+
 	@Override
 	public void handleGET(CoapExchange context)
 	{
@@ -109,19 +104,4 @@ public class GetActuatorCommandResourceHandler extends CoapResource
 		// send an appropriate response
 	    context.respond(ResponseCode.CONTENT, jsonData, MediaTypeRegistry.APPLICATION_JSON);
 	}
-	
-	@Override
-	public void handlePOST(CoapExchange context)
-	{
-	}
-	
-	@Override
-	public void handlePUT(CoapExchange context)
-	{
-	}
-	
-	public void setDataMessageListener(IDataMessageListener listener)
-	{
-	}
-	
 }

@@ -8,6 +8,7 @@
 
 package programmingtheiot.gda.connection;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,10 +63,37 @@ public class CoapClientConnector implements IRequestResponseClient
 	
 	
 	// public methods
-	
+
+	/*
 	@Override
 	public boolean sendDiscoveryRequest(int timeout)
 	{
+		return false;
+	}
+	*/
+
+
+	@Override
+	public boolean sendDiscoveryRequest(int timeout)
+	{
+		try {
+			String uri = "coap://localhost:5683/.well-known/core";
+			CoapClient client = new CoapClient(uri);
+			client.setTimeout(timeout * 1000L); // timeout in ms
+
+			Set<WebLink> resources = client.discover();
+
+			if (resources != null && !resources.isEmpty()) {
+				for (WebLink wl : resources) {
+					_Logger.info("Discovered resource: " + wl.getURI());
+				}
+				return true;
+			} else {
+				_Logger.warning("No resources discovered.");
+			}
+		} catch (Exception e) {
+			_Logger.log(Level.SEVERE, "Discovery request failed", e);
+		}
 		return false;
 	}
 
@@ -75,9 +103,36 @@ public class CoapClientConnector implements IRequestResponseClient
 		return false;
 	}
 
+	/*
 	@Override
 	public boolean sendGetRequest(ResourceNameEnum resource, String name, boolean enableCON, int timeout)
 	{
+		return false;
+	}
+	*/
+
+
+	@Override
+	public boolean sendGetRequest(ResourceNameEnum resource, String name, boolean enableCON, int timeout)
+	{
+		try {
+			String uri = "coap://localhost:5683/" + resource.getResourceName();
+			if (name != null && !name.isEmpty()) {
+				uri += "?" + name;
+			}
+			CoapClient client = new CoapClient(uri);
+			client.setTimeout(timeout * 1000L); // timeout in ms
+
+			CoapResponse response = client.get();
+			if (response != null && response.isSuccess()) {
+				_Logger.info("GET response for " + uri + ": " + response.getResponseText());
+				return true;
+			} else {
+				_Logger.warning("GET failed or no response for: " + uri);
+			}
+		} catch (Exception e) {
+			_Logger.log(Level.SEVERE, "GET request failed", e);
+		}
 		return false;
 	}
 

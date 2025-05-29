@@ -174,13 +174,13 @@ public class DeviceDataManager implements IDataMessageListener
 			return false;
 		}
 	}
-	
-	public void setActuatorDataListener(String name, IActuatorDataListener listener)
-	{ if (listener != null) {
 
-		this.dataMsgListener = listener;
-
-	}
+	public void setActuatorDataListener(String name, IActuatorDataListener listener) {
+		if (listener != null) {
+			// for now, just ignore 'name' - if you need more than one listener,
+			// you can use 'name' to create a map of listener instances
+			this.actuatorDataListener = listener;
+		}
 	}
 
 	public void startManager()

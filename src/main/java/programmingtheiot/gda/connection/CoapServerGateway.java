@@ -30,7 +30,7 @@ import programmingtheiot.common.IDataMessageListener;
 import programmingtheiot.common.ResourceNameEnum;
 import programmingtheiot.gda.connection.handlers.GenericCoapResourceHandler;
 
- //import programmingtheiot.gda.connection.handlers.GetActuatorCommandResourceHandler;
+ import programmingtheiot.gda.connection.handlers.GetActuatorCommandResourceHandler;
  import programmingtheiot.gda.connection.handlers.UpdateSystemPerformanceResourceHandler;
  import programmingtheiot.gda.connection.handlers.UpdateTelemetryResourceHandler;
 /**
@@ -152,10 +152,10 @@ public class CoapServerGateway
 			}
 		} else {
 			_Logger.log(Level.INFO, "No resources provided for server initialization.");
-			//initDefaultResources();
+			initDefaultResources();
 		}
 	}
-    /*
+
 	private void initDefaultResources() {
 		// initialize pre-defined resources
 		GetActuatorCommandResourceHandler getActuatorCmdResourceHandler = new GetActuatorCommandResourceHandler(
@@ -229,5 +229,5 @@ public class CoapServerGateway
 
 			parentResource = nextResource;
 		}
-	}*/
+	}
 }

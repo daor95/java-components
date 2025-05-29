@@ -62,28 +62,90 @@ public class UpdateTelemetryResourceHandler extends CoapResource
 
 	@Override
 	public void handleDELETE(CoapExchange context) {
-		_Logger.info("Handling DELETE request: " + context.getRequestText());
+		ResponseCode code = ResponseCode.NOT_ACCEPTABLE;
+
 		context.accept();
-		context.respond(ResponseCode.DELETED, "Delete request accepted and processed.");
+
+		if (this.dataMsgListener != null) {
+			this.dataMsgListener = null;
+
+			code = ResponseCode.DELETED;
+		} else {
+			code = ResponseCode.CONTINUE;
+		}
+
+		String msg = "Delete system perf data request handled: " + super.getName();
+
+		context.respond(code, msg);
 	}
 
 	@Override
 	public void handleGET(CoapExchange context) {
-		_Logger.info("Handling GET request: " + context.getRequestText());
+		ResponseCode code = ResponseCode.NOT_ACCEPTABLE;
 		context.accept();
-		context.respond(ResponseCode.CHANGED, "GET request accepted and processed.");
+
+		if (this.dataMsgListener != null) {
+			try {
+				SystemPerformanceData sysPerfData = null; // No retrieval logic yet
+
+				String jsonData;
+				if (sysPerfData != null) {
+					jsonData = DataUtil.getInstance().systemPerformanceDataToJson(sysPerfData);
+					code = ResponseCode.CONTENT;
+				} else {
+					jsonData = "Generic handler. No GET action taken: " + super.getName();
+					code = ResponseCode.VALID;
+				}
+
+				context.respond(code, jsonData);
+				return;
+			} catch (Exception e) {
+				_Logger.warning("Failed to handle GET request. Message: " + e.getMessage());
+				code = ResponseCode.BAD_REQUEST;
+			}
+		} else {
+			_Logger.info("No callback listener for request. Ignoring GET.");
+			code = ResponseCode.CONTINUE;
+		}
+
+		String msg = "Update system perf data request handled: " + super.getName();
+		context.respond(code, msg);
 	}
 
 	@Override
 	public void handlePOST(CoapExchange context) {
-		_Logger.info("Handling POST request: " + context.getRequestText());
+		ResponseCode code = ResponseCode.NOT_ACCEPTABLE;
+
 		context.accept();
-		context.respond(ResponseCode.CHANGED, "POST request accepted and processed.");
+
+		if (this.dataMsgListener != null) {
+			try {
+				String jsonData = new String(context.getRequestPayload());
+
+				SystemPerformanceData sysPerfData = DataUtil.getInstance().jsonToSystemPerformanceData(jsonData);
+
+				this.dataMsgListener.handleSystemPerformanceMessage(ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE,
+						sysPerfData);
+
+				code = ResponseCode.CREATED;
+			} catch (Exception e) {
+				_Logger.warning("Failed to handle POST request. Message: " + e.getMessage());
+
+				code = ResponseCode.BAD_REQUEST;
+			}
+		} else {
+			_Logger.info("No callback listener for request. Ignoring POST.");
+
+			code = ResponseCode.CONTINUE;
+		}
+
+		String msg = "Create system perf data request handled: " + super.getName();
+
+		context.respond(code, msg);
 	}
 
 	@Override
-	public void handlePUT(CoapExchange context)
-	{
+	public void handlePUT(CoapExchange context) {
 		ResponseCode code = ResponseCode.NOT_ACCEPTABLE;
 
 		context.accept();

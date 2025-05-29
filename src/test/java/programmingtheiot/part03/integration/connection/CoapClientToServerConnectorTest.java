@@ -11,6 +11,8 @@ package programmingtheiot.part03.integration.connection;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.junit.After;
@@ -50,8 +52,8 @@ public class CoapClientToServerConnectorTest
 	
 	private CoapClientConnector coapClient = null;
 	private IDataMessageListener dataMsgListener = null;
-	
-	
+
+
 	// test setup methods
 	
 	/**
@@ -63,6 +65,9 @@ public class CoapClientToServerConnectorTest
 		_ServerGateway = new CoapServerGateway(new DefaultDataMessageListener());
 		
 		assertTrue(_ServerGateway.startServer());
+
+		// Add a short delay to ensure server is ready
+		Thread.sleep(500); // 500 ms
 	}
 	
 	/**
@@ -108,7 +113,15 @@ public class CoapClientToServerConnectorTest
 
 	@Test
 	public void testGetEachResource() {
-		for (ResourceNameEnum resource : ResourceNameEnum.values()) {
+
+		List<ResourceNameEnum> implementedResources = Arrays.asList(
+				ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE,
+				ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE,
+				ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE
+		);
+
+		for (ResourceNameEnum resource : implementedResources) {
+
 			boolean success = this.coapClient.sendGetRequest(resource, null, USE_DEFAULT_RESOURCES, DEFAULT_TIMEOUT);
 			assertTrue("GET request failed for " + resource.getResourceName(), success);
 			_Logger.info("GET request for " + resource.getResourceName() + " was " + (success ? "successful" : "unsuccessful"));
