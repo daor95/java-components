@@ -108,7 +108,9 @@ public class CloudClientConnector implements ICloudClient
 	{
 		if (resource != null && data != null) {
 			String payload = DataUtil.getInstance().sensorDataToJson(data);
-
+			// Also send in Ubidots key-value format
+			String ubidotsPayload = "{\"" + data.getName() + "\":" + data.getValue() + "}";
+			publishMessageToCloud(resource, data.getName() + "-ubidots", ubidotsPayload);
 			return publishMessageToCloud(resource, data.getName(), payload);
 		}
 
@@ -125,7 +127,10 @@ public class CloudClientConnector implements ICloudClient
 			cpuData.setName(ConfigConst.CPU_UTIL_NAME);
 			cpuData.setValue(data.getCpuUtilization());
 
-			boolean cpuDataSuccess = sendEdgeDataToCloud(resource, cpuData);
+			String cpuPayload = DataUtil.getInstance().sensorDataToJson(cpuData);
+			String cpuUbidotsPayload = "{\"" + cpuData.getName() + "\":" + cpuData.getValue() + "}";
+			publishMessageToCloud(resource, cpuData.getName() + "-ubidots", cpuUbidotsPayload);
+			boolean cpuDataSuccess = publishMessageToCloud(resource, cpuData.getName(), cpuPayload);
 
 			if (! cpuDataSuccess) {
 				_Logger.warning("Failed to send CPU utilization data to cloud service.");
@@ -137,7 +142,10 @@ public class CloudClientConnector implements ICloudClient
 			memData.setName(ConfigConst.MEM_UTIL_NAME);
 			memData.setValue(data.getMemoryUtilization());
 
-			boolean memDataSuccess = sendEdgeDataToCloud(resource, memData);
+			String memPayload = DataUtil.getInstance().sensorDataToJson(memData);
+			String memUbidotsPayload = "{\"" + memData.getName() + "\":" + memData.getValue() + "}";
+			publishMessageToCloud(resource, memData.getName() + "-ubidots", memUbidotsPayload);
+			boolean memDataSuccess = publishMessageToCloud(resource, memData.getName(), memPayload);
 
 			if (! memDataSuccess) {
 				_Logger.warning("Failed to send memory utilization data to cloud service.");
@@ -221,7 +229,8 @@ public class CloudClientConnector implements ICloudClient
 	private boolean publishMessageToCloud(String topicName, String payload) {
 		try {
 			_Logger.finest("Publishing payload value(s) to CSP: " + topicName);
-
+			// Print the payload for debugging
+			System.out.println("[DEBUG] Publishing to topic: " + topicName + ", payload: " + payload);
 			this.mqttClient.publishMessage(topicName, payload.getBytes(), this.qosLevel);
 
 			// NOTE: Depending on the cloud service, it may be necessary to 'throttle'
