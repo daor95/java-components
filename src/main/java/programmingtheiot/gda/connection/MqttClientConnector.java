@@ -8,6 +8,7 @@
 
 package programmingtheiot.gda.connection;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,16 +23,25 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import programmingtheiot.data.DataUtil;
+import programmingtheiot.data.SensorData;
+import programmingtheiot.data.SystemPerformanceData;
+import programmingtheiot.data.ActuatorData;
 import programmingtheiot.common.ConfigConst;
 import programmingtheiot.common.ConfigUtil;
 import programmingtheiot.common.IDataMessageListener;
 import programmingtheiot.common.ResourceNameEnum;
-
+import programmingtheiot.common.SimpleCertManagementUtil;
+import programmingtheiot.common.DefaultDataMessageListener;
 
 import java.io.File;
 import javax.net.ssl.SSLSocketFactory;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import programmingtheiot.common.SimpleCertManagementUtil;
+
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+
+
 /**
  * Shell representation of class for student implementation.
  * 
@@ -46,6 +56,8 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	private boolean useAsyncClient = false;
 
 	private MqttClient           mqttClient = null;
+	// NOTE: MQTT client updated to use async client vs sync client
+	private MqttAsyncClient      mqttAsyncClient = null;
 	private MqttConnectOptions   connOpts = null;
 	private MemoryPersistence    persistence = null;
 	private IDataMessageListener dataMsgListener = null;
@@ -148,25 +160,43 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	public boolean connectClient()
 	{
 		try {
-			if (this.mqttClient == null) {
-				this.mqttClient = new MqttClient(this.brokerAddr, this.clientID, this.persistence);
-				this.mqttClient.setCallback(this);
-			}
+			if (this.useAsyncClient) {
 
-			if (! this.mqttClient.isConnected()) {
-				_Logger.info("MQTT client connecting to broker: " + this.brokerAddr);
-				this.mqttClient.connect(this.connOpts);
-				return true;
+				// Asynchronous client
+				if (this.mqttAsyncClient == null) {
+					this.mqttAsyncClient = new MqttAsyncClient(this.brokerAddr, this.clientID, this.persistence);
+					this.mqttAsyncClient.setCallback(this);
+				}
+				// Asynchronous client connection
+				if (!this.mqttAsyncClient.isConnected()) {
+					_Logger.info("MQTT ASYNC client CONNECTING to broker: " + this.brokerAddr);
+					this.mqttAsyncClient.connect(this.connOpts);
+
+					return true;
+				} else {
+					_Logger.warning("MQTT ASYNC client already connected to broker: " + brokerAddr);
+				}
 			} else {
-				_Logger.warning("MQTT client already connected to broker: " + this.brokerAddr);
+				// Synchronous client
+				if (this.mqttClient == null) {
+					this.mqttClient = new MqttClient(this.brokerAddr, this.clientID, this.persistence);
+					this.mqttClient.setCallback(this);
+				}
+				// Synchronous client connection
+				if (!mqttClient.isConnected()) {
+					_Logger.info("MQTT SYNC client CONNECTING to broker: " + this.brokerAddr);
+					this.mqttClient.connect(this.connOpts);
+					return true;
+				} else {
+					_Logger.warning("MQTT SYNC client already connected to broker: " + this.brokerAddr);
+				}
 			}
 		} catch (MqttException e) {
-			// TODO: handle this exception
-			_Logger.log(Level.SEVERE, "Failed to connect MQTT client to broker.", e);
+			_Logger.log(Level.SEVERE, "FAILED to connect MQTT client to broker.", e);
 		}
-
 		return false;
 	}
+
 
 	@Override
 	public boolean disconnectClient()
@@ -293,6 +323,22 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	public void connectComplete(boolean reconnect, String serverURI)
 	{
 		_Logger.info("MQTT connection successful (is reconnect = " + reconnect + "). Broker: " + serverURI);
+
+		int qos = ConfigUtil.getInstance().getInteger(ConfigConst.MQTT_GATEWAY_SERVICE,
+				ConfigConst.DEFAULT_QOS_KEY,
+				ConfigConst.DEFAULT_QOS);
+
+		_Logger.info("The topic being subscribed to is the following: " + ResourceNameEnum.CDA_ACTUATOR_RESPONSE_RESOURCE.getResourceName());
+		this.subscribeToTopic(ResourceNameEnum.CDA_ACTUATOR_RESPONSE_RESOURCE, qos);
+
+		_Logger.info("The topic being subscribed to is the following: " + ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE.getResourceName());
+		this.subscribeToTopic(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, qos);
+
+		_Logger.info("The topic being subscribed to is the following: " + ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE.getResourceName());
+		this.subscribeToTopic(ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, qos);
+
+		// IMPORTANT NOTE: You'll have to parse each message type in the callback method
+		// `public void messageArrived(String topic, MqttMessage msg) throws Exception`
 	}
 
 	@Override
@@ -313,7 +359,7 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	public void messageArrived(String topic, MqttMessage message)
 	{
 		// TODO: Logging level may need to be adjusted to reduce output in log file / console
-		_Logger.info("MQTT message arrived on topic: '" + topic + "'");
+		_Logger.info("MQTT message arrived on topic: '" + topic + "': " + message.toString());
 	}
 
 	
