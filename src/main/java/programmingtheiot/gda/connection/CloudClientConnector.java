@@ -108,9 +108,10 @@ public class CloudClientConnector implements ICloudClient
 	{
 		if (resource != null && data != null) {
 			String payload = DataUtil.getInstance().sensorDataToJson(data);
-			// Also send in Ubidots key-value format
+			// Also send in Ubidots key-value format to the correct topic
 			String ubidotsPayload = "{\"" + data.getName() + "\":" + data.getValue() + "}";
-			publishMessageToCloud(resource, data.getName() + "-ubidots", ubidotsPayload);
+			String ubidotsTopic = "/v1.6/devices/ConstrainedDevice";
+			publishMessageToCloud(ubidotsTopic, ubidotsPayload);
 			return publishMessageToCloud(resource, data.getName(), payload);
 		}
 
@@ -129,7 +130,8 @@ public class CloudClientConnector implements ICloudClient
 
 			String cpuPayload = DataUtil.getInstance().sensorDataToJson(cpuData);
 			String cpuUbidotsPayload = "{\"" + cpuData.getName() + "\":" + cpuData.getValue() + "}";
-			publishMessageToCloud(resource, cpuData.getName() + "-ubidots", cpuUbidotsPayload);
+			String ubidotsTopic = "/v1.6/devices/ConstrainedDevice";
+			publishMessageToCloud(ubidotsTopic, cpuUbidotsPayload);
 			boolean cpuDataSuccess = publishMessageToCloud(resource, cpuData.getName(), cpuPayload);
 
 			if (! cpuDataSuccess) {
@@ -144,7 +146,7 @@ public class CloudClientConnector implements ICloudClient
 
 			String memPayload = DataUtil.getInstance().sensorDataToJson(memData);
 			String memUbidotsPayload = "{\"" + memData.getName() + "\":" + memData.getValue() + "}";
-			publishMessageToCloud(resource, memData.getName() + "-ubidots", memUbidotsPayload);
+			publishMessageToCloud(ubidotsTopic, memUbidotsPayload);
 			boolean memDataSuccess = publishMessageToCloud(resource, memData.getName(), memPayload);
 
 			if (! memDataSuccess) {
