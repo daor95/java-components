@@ -35,6 +35,7 @@ import programmingtheiot.gda.connection.MqttClientConnector;
 import programmingtheiot.gda.connection.RedisPersistenceAdapter;
 import programmingtheiot.gda.connection.SmtpClientConnector;
 import programmingtheiot.gda.system.SystemPerformanceManager;
+import programmingtheiot.gda.connection.ICloudClient;
 
 import programmingtheiot.data.BaseIotData;
 
@@ -60,7 +61,7 @@ public class DeviceDataManager implements IDataMessageListener
 
 	private MqttClientConnector mqttClient = null;
 	private IActuatorDataListener actuatorDataListener = null;
-	private IPubSubClient cloudClient = null;
+	private ICloudClient cloudClient = null;
 	private IPersistenceClient persistenceClient = null;
 	private IRequestResponseClient smtpClient = null;
 	private CoapServerGateway coapServer = null;
@@ -169,7 +170,32 @@ public class DeviceDataManager implements IDataMessageListener
 	@Override
 	public boolean handleActuatorCommandRequest(ResourceNameEnum resourceName, ActuatorData data)
 	{
-		return false;
+		if (data != null) {
+			// NOTE: Feel free to update this log message for debugging and monitoring
+			_Logger.log(
+					Level.FINE,
+					"Actuator request received: {0}. Message: {1}",
+					new Object[] {resourceName.getResourceName(), Integer.valueOf((data.getCommand()))});
+
+			if (data.hasError()) {
+				_Logger.warning("Error flag set for ActuatorData instance.");
+			}
+
+			// TODO: retrieve this from config file
+			int qos = ConfigConst.DEFAULT_QOS;
+
+			// TODO: you may want to implement some analysis logic here or
+			// in a separate method to determine how best to handle incoming
+			// ActuatorData before calling this.sendActuatorCommandtoCda()
+
+			// Recall that this private method was implement in Lab Module 10
+			// See PIOT-GDA-10-003 for details
+			this.sendActuatorCommandtoCda(resourceName, data);
+
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -193,10 +219,6 @@ public class DeviceDataManager implements IDataMessageListener
 				_Logger.warning("Error flag set for SensorData instance.");
 			}
 
-			if (this.enablePersistenceClient && this.persistenceClient != null) {
-				this.persistenceClient.storeData(resourceName.getResourceName(), 0, data);
-			}
-
 			String jsonData = DataUtil.getInstance().sensorDataToJson(data);
 
 			_Logger.info("JSON [SensorData] -> " + jsonData);
@@ -204,13 +226,10 @@ public class DeviceDataManager implements IDataMessageListener
 			int qos = ConfigUtil.getInstance().getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.DEFAULT_QOS_KEY,
 					ConfigConst.DEFAULT_QOS);
 
-			if (this.enablePersistenceClient && this.persistenceClient != null) {
-				this.persistenceClient.storeData(resourceName.getResourceName(), qos, data);
-			}
 
 			this.handleIncomingDataAnalysis(resourceName, data);
 
-			this.handleUpstreamTransmission(resourceName, jsonData, qos);
+			this.handleUpstreamTransmission(resourceName, data, qos);
 
 			return true;
 		} else {
@@ -353,9 +372,15 @@ public class DeviceDataManager implements IDataMessageListener
 				_Logger.warning("Error flag set for SystemPerformanceData instance.");
 			}
 
-			if (this.enablePersistenceClient) {
-				this.persistenceClient.storeData(resourceName.getResourceName(), 0, data);
-			}
+			// TODO: retrieve this from config file
+			int qos = ConfigUtil.getInstance().getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.DEFAULT_QOS_KEY,
+					ConfigConst.DEFAULT_QOS);
+
+			// NOTE: You may want to persist your SystemPerformanceData here
+
+			// NOTE: You may want to also analyze the SystemPerformanceData here
+
+			this.handleUpstreamTransmission(resourceName, data, qos);
 
 			return true;
 		} else {
@@ -413,6 +438,8 @@ public class DeviceDataManager implements IDataMessageListener
 			}
 		}
 
+		this.cloudClient.connectClient();
+
 		if (this.sysPerfMgr != null) {
 			this.sysPerfMgr.startManager();
 		}
@@ -457,6 +484,8 @@ public class DeviceDataManager implements IDataMessageListener
 				_Logger.severe("Failed to stop CoAP server. Check log file for details.");
 			}
 		}
+
+		this.cloudClient.disconnectClient();
 	}
 
 	
@@ -497,8 +526,11 @@ public class DeviceDataManager implements IDataMessageListener
 			_Logger.info("CoAP server enabled");
 		}
 
+
 		if (this.enableCloudClient) {
-			// TODO: implement this in Lab Module 10
+			this.cloudClient = new CloudClientConnector();
+			this.cloudClient.setDataMessageListener(this);
+			_Logger.info("Cloud client enabled");
 		}
 
 		if (this.enablePersistenceClient) {
@@ -531,10 +563,28 @@ public class DeviceDataManager implements IDataMessageListener
 	}
 
 
-	private boolean handleUpstreamTransmission(ResourceNameEnum resourceName, String jsonData, int qos) {
+	private void handleUpstreamTransmission(ResourceNameEnum resourceName, BaseIotData data, int qos) {
 
-		_Logger.info("handleUpstreamTransmission called");
-		return true;
+		_Logger.fine("Sending JSON data to cloud service: " + resourceName);
+
+		if (this.cloudClient != null) {
+
+			if (data instanceof SensorData) {
+
+				this.cloudClient.sendEdgeDataToCloud(resourceName, (SensorData) data);
+				_Logger.info("Sent JSON data upstream to CSP: " + resourceName);
+
+			} else if (data instanceof SystemPerformanceData) {
+
+				this.cloudClient.sendEdgeDataToCloud(resourceName, (SystemPerformanceData) data);
+				_Logger.info("Sent JSON data upstream to CSP: " + resourceName);
+
+			} else {
+
+				_Logger.warning("Unsupported data type for cloud transmission: " + data.getClass().getName());
+
+			}
+		}
 	}
 
 	

@@ -11,13 +11,14 @@
 # Cloud client configuration information
 #
 [Cloud.GatewayService]
-credFile       = ./cred/UbidotsCloudCred.props
-certFile       = ./cert/UbidotsCloudCert.pem
+credFile       = ./certs/UbidotsCloudCred.props
+certFile       = ./certs/UbidotsCloudCert.pem
 host           = industrial.api.ubidots.com
 port           = 1883
 securePort     = 8883
 defaultQoS     = 0
 keepAlive      = 30
+enableAuth     = True
 enableCrypt    = True
 baseUrl        = https://things.ubidots.com/api/v1.6/
 baseTopic      = /v1.6/devices/
@@ -71,7 +72,7 @@ pollCycleSecs           = 60
 enableMqttClient        = True
 enableCoapServer        = True
 enableCoapClient        = False
-enableCloudClient       = False
+enableCloudClient       = True
 enableSmtpClient        = False
 enablePersistenceClient = False
 enableSystemPerformance = False
@@ -84,7 +85,7 @@ enableRunForever = True
 handleHumidityChangeOnDevice = True
 
 # min seconds between readings before triggering actuation event
-humidityMaxTimePastThreshold = 300
+humidityMaxTimePastThreshold = 5
 
 # ideal average humidity level (% relative)
 nominalHumiditySetting       = 40.0
