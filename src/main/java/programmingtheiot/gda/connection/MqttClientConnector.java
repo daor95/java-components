@@ -13,14 +13,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import programmingtheiot.data.DataUtil;
@@ -36,10 +29,8 @@ import programmingtheiot.common.DefaultDataMessageListener;
 
 import java.io.File;
 import javax.net.ssl.SSLSocketFactory;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
-import programmingtheiot.common.SimpleCertManagementUtil;
 
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import programmingtheiot.common.SimpleCertManagementUtil;
 
 
 /**
@@ -192,9 +183,9 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 				// Asynchronous client connection
 				if (!this.mqttAsyncClient.isConnected()) {
 					_Logger.info("MQTT ASYNC client CONNECTING to broker: " + this.brokerAddr);
-					this.mqttAsyncClient.connect(this.connOpts);
-
-					return true;
+					IMqttToken token = this.mqttAsyncClient.connect(this.connOpts);
+					token.waitForCompletion();
+					return this.mqttAsyncClient.isConnected();
 				} else {
 					_Logger.warning("MQTT ASYNC client already connected to broker: " + brokerAddr);
 				}

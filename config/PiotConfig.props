@@ -37,7 +37,7 @@ enableCrypt    = True
 # MQTT client configuration information
 #
 [Mqtt.GatewayService]
-credFile       = ./certs/PiotMqttCred.props
+credFile       = ./certs/server.crt
 certFile       = ./certs/server.crt
 host           = localhost
 port           = 1883
@@ -46,7 +46,7 @@ defaultQoS     = 0
 keepAlive      = 60
 enableAuth     = False
 enableCrypt    = True
-useAsyncClient = False
+useAsyncClient = True
 
 #
 # CoAP client and server configuration information

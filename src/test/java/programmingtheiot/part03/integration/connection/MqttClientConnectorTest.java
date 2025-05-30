@@ -75,7 +75,7 @@ public class MqttClientConnectorTest
 	/**
 	 * Test method for {@link programmingtheiot.gda.connection.MqttClientConnector#connectClient()}.
 	 */
-	//@Test
+	@Test
 	public void testConnectAndDisconnect()
 	{
 		int delay = ConfigUtil.getInstance().getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.KEEP_ALIVE_KEY, ConfigConst.DEFAULT_KEEP_ALIVE);
@@ -96,9 +96,8 @@ public class MqttClientConnectorTest
 	/**
 	 * Test method for {@link programmingtheiot.gda.connection.MqttClientConnector#publishMessage(programmingtheiot.common.ResourceNameEnum, java.lang.String, int)}.
 	 */
-	//@Test
-	public void testPublishAndSubscribe()
-	{
+	@Test
+	public void testPublishAndSubscribe() throws InterruptedException {
 		int qos = 0;
 		int delay = ConfigUtil.getInstance().getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.KEEP_ALIVE_KEY, ConfigConst.DEFAULT_KEEP_ALIVE);
 		
@@ -142,14 +141,14 @@ public class MqttClientConnectorTest
 		}
 		
 		assertTrue(this.mqttClient.disconnectClient());
+		Thread.sleep(2000); // Wait for async connect
 	}
 	
 	/**
 	 * Test method for {@link programmingtheiot.gda.connection.MqttClientConnector#publishMessage(programmingtheiot.common.ResourceNameEnum, java.lang.String, int)}.
 	 */
-//	@Test
-	public void testPublishAndSubscribeTwoClients()
-	{
+	@Test
+	public void testPublishAndSubscribeTwoClients() throws InterruptedException {
 		int qos = 0;
 		
 		IDataMessageListener listener = new MqttPublishDataMessageListener(ResourceNameEnum.GDA_MGMT_STATUS_CMD_RESOURCE, true);
@@ -157,6 +156,7 @@ public class MqttClientConnectorTest
 		this.mqttClient.setDataMessageListener(listener);
 		
 		assertTrue(this.mqttClient.connectClient());
+		Thread.sleep(2000); // Wait for async connect
 		
 		assertTrue(this.mqttClient.subscribeToTopic(ResourceNameEnum.GDA_MGMT_STATUS_MSG_RESOURCE, qos));
 		assertTrue(this.mqttClient.subscribeToTopic(ResourceNameEnum.GDA_MGMT_STATUS_CMD_RESOURCE, 0));
@@ -187,17 +187,18 @@ public class MqttClientConnectorTest
 		}
 
 		assertTrue(this.mqttClient.disconnectClient());
+		Thread.sleep(2000); // Wait for async connect
 	}
 	
 	/**
 	 * Test method for {@link programmingtheiot.gda.connection.MqttClientConnector#publishMessage(programmingtheiot.common.ResourceNameEnum, java.lang.String, int)}.
 	 */
-//	@Test
-	public void testIntegrateWithCdaPublishCdaCmdTopic()
-	{
+	@Test
+	public void testIntegrateWithCdaPublishCdaCmdTopic() throws InterruptedException {
 		int qos = 1;
 		
 		assertTrue(this.mqttClient.connectClient());
+		Thread.sleep(2000); // Wait for async connect
 		assertTrue(this.mqttClient.publishMessage(ResourceNameEnum.CDA_MGMT_STATUS_CMD_RESOURCE, "TEST: This is the CDA command payload.", qos));
 		
 		try {
@@ -207,18 +208,19 @@ public class MqttClientConnectorTest
 		}
 		
 		assertTrue(this.mqttClient.disconnectClient());
+		Thread.sleep(2000); // Wait for async connect
 	}
 	
 	/**
 	 * Test method for {@link programmingtheiot.gda.connection.MqttClientConnector#publishMessage(programmingtheiot.common.ResourceNameEnum, java.lang.String, int)}.
 	 */
-//	@Test
-	public void testIntegrateWithCdaSubscribeCdaMgmtTopic()
-	{
+	@Test
+	public void testIntegrateWithCdaSubscribeCdaMgmtTopic() throws InterruptedException {
 		int qos = 1;
 		int delay = ConfigUtil.getInstance().getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.KEEP_ALIVE_KEY, ConfigConst.DEFAULT_KEEP_ALIVE);
 		
 		assertTrue(this.mqttClient.connectClient());
+		Thread.sleep(2000); // Wait for async connect
 		assertTrue(this.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_MGMT_STATUS_MSG_RESOURCE, qos));
 		
 		try {
@@ -236,14 +238,19 @@ public class MqttClientConnectorTest
 		}
 		
 		assertTrue(this.mqttClient.disconnectClient());
-	}
+        try {
+            Thread.sleep(2000); // Wait for async connect
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 	@Test
-	public void testActuatorCommandResponseSubscription()
-	{
+	public void testActuatorCommandResponseSubscription() throws InterruptedException {
 		int qos = 0;
 
 		assertTrue(this.mqttClient.connectClient());
+		Thread.sleep(2000); // Wait for async connect
 
 		try {
 			Thread.sleep(2000);
@@ -266,8 +273,13 @@ public class MqttClientConnectorTest
 		}
 
 		assertTrue(this.mqttClient.disconnectClient());
+        try {
+            Thread.sleep(2000); // Wait for async connect
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
-		try {
+        try {
 			Thread.sleep(2000);
 		} catch (Exception e) {
 			// ignore
