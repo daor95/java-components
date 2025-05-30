@@ -333,6 +333,10 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 
 			// IMPORTANT NOTE: You'll have to parse each message type in the callback method
 			// `public void messageArrived(String topic, MqttMessage msg) throws Exception`
+		} else {
+			// Subscribe to the LED actuation event topic from Ubidots cloud
+			this.subscribeToTopic("led/actuator", qos);
+			this.subscribeToTopic("constraineddevice/ledactuator", qos);
 		}
 
 		// This call enables the MqttClientConnector to notify another listener
